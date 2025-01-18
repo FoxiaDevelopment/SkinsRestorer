@@ -99,7 +99,6 @@ public class UpdateCheckerGitHub {
                 }
 
                 String downloadUrl = jarAssetUrl.get();
-                printUpdateAvailable(cause, releaseInfo.getTagName(), downloadUrl, downloader != null);
                 if (downloader != null && downloader.downloadUpdate(downloadUrl, verificationAssetUrl.orElse(null))) {
                     updateDownloaded = true;
                 }
@@ -108,7 +107,6 @@ public class UpdateCheckerGitHub {
                     return;
                 }
 
-                printUpToDate(cause);
             }
         } catch (IOException | DataRequestException e) {
             logger.warning("Failed to get release info from api.github.com. \n If this message is repeated a lot, please see https://skinsrestorer.net/firewall");
@@ -116,59 +114,6 @@ public class UpdateCheckerGitHub {
         }
     }
 
-    public void printUpToDate(UpdateCause cause) {
-        printHeader(cause);
-        logger.info("§b    Version: §a%s".formatted(BuildData.VERSION));
-        logger.info("§b    Commit: §a%s".formatted(BuildData.COMMIT_SHORT));
-        if (cause == UpdateCause.NO_NETWORK) {
-            logger.info("§c    No network connection available!");
-        } else {
-            logger.info("§a    This is the latest version!");
-        }
-        printFooter();
-    }
-
-    public void printUpdateAvailable(UpdateCause cause, String newVersion, String downloadUrl, boolean updateDownloader) {
-        printHeader(cause);
-        logger.info("§b    Version: §c%s".formatted(BuildData.VERSION));
-        logger.info("§b    Commit: §c%s".formatted(BuildData.COMMIT_SHORT));
-        if (updateDownloader) {
-            logger.info("§b    A new version (§a%s§b) is available! Downloading update...".formatted(newVersion));
-        } else {
-            logger.info("§b    A new version (§a%s§b) is available!".formatted(newVersion));
-            logger.info("§e    %s".formatted(downloadUrl));
-        }
-        printFooter();
-    }
-
-    private void printHeader(UpdateCause cause) {
-        logger.info(LOG_ROW);
-        logger.info("§a    +==================+");
-        logger.info("§a    |   SkinsRestorer  |");
-        if (cause.isError()) {
-            logger.info("§a    |------------------|");
-            logger.info("§a    |    §cError Mode§a    |");
-        } else {
-            SRServerPlugin serverPlugin = injector.getIfAvailable(SRServerPlugin.class);
-            if (serverPlugin != null) {
-                if (serverPlugin.isProxyMode()) {
-                    logger.info("§a    |------------------|");
-                    logger.info("§a    |    §eProxy Mode§a    |");
-                } else {
-                    logger.info("§a    |------------------|");
-                    logger.info("§a    |  §9§n§lStandalone Mode§r§a |");
-                }
-            }
-        }
-        logger.info("§a    +==================+");
-        logger.info(LOG_ROW);
-    }
-
-    private void printFooter() {
-        logger.info(LOG_ROW);
-        logger.info("§9Do you have issues? Read our troubleshooting guide: §ehttps://skinsrestorer.net/docs/troubleshooting");
-        logger.info("§9Want to support SkinsRestorer? Consider donating: §ehttps://skinsrestorer.net/donate");
-    }
 
     public boolean isVersionNewer(String currentVersion, String newVersion) {
         return SemanticVersion.fromString(newVersion).isNewerThan(SemanticVersion.fromString(currentVersion));
